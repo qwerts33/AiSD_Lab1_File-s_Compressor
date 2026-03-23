@@ -1,8 +1,3 @@
-# Task_3/lzw_ha.py
-"""
-LZW + Huffman компрессор.
-"""
-
 import struct
 import sys
 from pathlib import Path
@@ -16,10 +11,6 @@ from Task_2.huffman_codec import compress_to_bytes, decompress_from_bytes
 
 
 def lzw_ha_compress(data: bytes, max_dict: int = 4096) -> bytes:
-    """
-    LZW + Huffman сжатие.
-    Формат: [max_dict:4 байта] + [Huffman-сжатые LZW данные]
-    """
     lzw_data = lzw_compress(data, max_dict=max_dict)
     ha_data = compress_to_bytes(lzw_data)
 
@@ -28,9 +19,6 @@ def lzw_ha_compress(data: bytes, max_dict: int = 4096) -> bytes:
 
 
 def lzw_ha_decompress(blob: bytes) -> bytes:
-    """
-    LZW + Huffman декомпрессия.
-    """
     if len(blob) < 4:
         raise ValueError("Короткий заголовок")
 

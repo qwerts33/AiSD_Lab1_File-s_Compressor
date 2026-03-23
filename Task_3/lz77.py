@@ -1,13 +1,4 @@
-"""
-LZ77: сжатие/распаковка.
-Формат потока: заголовок window_size (uint32 LE), затем токены:
-  0x00 + byte — литерал
-  0x01 + uint16 offset + uint16 length — копия из окна (offset от текущей позиции назад, length >= 1)
-"""
-from __future__ import annotations
-
 import struct
-
 
 def lz77_compress(data: bytes, window: int = 4096, lookahead: int = 16) -> bytes:
     if not data:
@@ -40,7 +31,6 @@ def lz77_compress(data: bytes, window: int = 4096, lookahead: int = 16) -> bytes
             i += 1
     return bytes(out)
 
-
 def lz77_decompress(blob: bytes) -> bytes:
     if len(blob) < 4:
         raise ValueError("Короткий заголовок")
@@ -63,7 +53,6 @@ def lz77_decompress(blob: bytes) -> bytes:
         else:
             raise ValueError("Неизвестный токен")
     return bytes(buf)
-
 
 def roundtrip(data: bytes) -> bool:
     return lz77_decompress(lz77_compress(data)) == data

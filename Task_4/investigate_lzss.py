@@ -1,14 +1,9 @@
-# investigate_lzss.py
-"""
-Исследование зависимости коэффициента сжатия LZSS от размера буфера.
-"""
-
 import matplotlib.pyplot as plt
 
 
 def investigate_lzss_buffer(data: bytes, lookahead: int = 18, min_match: int = 3):
     """Исследует зависимость от размера буфера (window)."""
-    from lzss_impl import lzss_compress
+    from Task_3.lzss_impl import lzss_compress
 
     windows = [128, 256, 512, 1024, 2048, 4096, 8192, 16384, 32768]
     ratios = []

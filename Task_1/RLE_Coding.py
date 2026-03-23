@@ -1,12 +1,3 @@
-"""
-RLE: символ длиной Ms бит, управляющий код длиной Mc бит.
-Повтор: младшие (Mc-1) бит — число повторов, старший бит управляющего поля = 0.
-Литерал: старший бит = 1, остальное — число символов подряд без кодирования повтором.
-Требование: Ms и Mc кратны 8, Mc >= 8.
-"""
-from __future__ import annotations
-
-
 def _check_ms_mc(ms: int, mc: int) -> tuple[int, int]:
     if ms < 8 or ms % 8 != 0 or mc < 8 or mc % 8 != 0:
         raise ValueError("Ms и Mc должны быть >= 8 и кратны 8")
@@ -14,9 +5,7 @@ def _check_ms_mc(ms: int, mc: int) -> tuple[int, int]:
 
 
 def _max_count(mc: int) -> int:
-    """Максимум для повторов и длины литерального блока (число символов)."""
     return (1 << (mc - 1)) - 1
-
 
 def pack_control(is_literal: bool, count: int, mc: int) -> bytes:
     cb = mc // 8
@@ -30,13 +19,11 @@ def pack_control(is_literal: bool, count: int, mc: int) -> bytes:
 
 
 def unpack_control(buf: bytes, mc: int) -> tuple[bool, int, int]:
-    """Возвращает (literal, count, control_byte_len)."""
     cb = mc // 8
     val = int.from_bytes(buf[:cb], "little")
     literal = ((val >> (mc - 1)) & 1) != 0
     count = val & ((1 << (mc - 1)) - 1)
     return literal, count, cb
-
 
 def encode(data: bytes, ms: int = 8, mc: int = 8) -> bytes:
     symbol_size, control_size = _check_ms_mc(ms, mc)
@@ -64,7 +51,6 @@ def encode(data: bytes, ms: int = 8, mc: int = 8) -> bytes:
             start = i
             i += symbol_size
             while i < n and (i - start) // symbol_size < max_count:
-                # Останавливаемся перед началом повтора длиной >= 2
                 next_sym = data[i : i + symbol_size]
                 after_next = data[i + symbol_size : i + 2 * symbol_size] if i + symbol_size < n else None
                 if after_next is not None and next_sym == after_next:
@@ -82,7 +68,6 @@ def decode(data: bytes, ms: int = 8, mc: int = 8) -> bytes:
     i = 0
     n = len(data)
     cb = mc // 8
-
     while i < n:
         if i + cb > n:
             raise ValueError("Обрезанный управляющий код")

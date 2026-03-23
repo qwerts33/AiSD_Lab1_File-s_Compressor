@@ -1,9 +1,3 @@
-"""
-LZ78: токен (индекс известной фразы, следующий байт; 0xFFFF — только индекс в конце).
-Ограничение словаря max_dict.
-"""
-from __future__ import annotations
-
 import struct
 
 _SENT = 0xFFFF

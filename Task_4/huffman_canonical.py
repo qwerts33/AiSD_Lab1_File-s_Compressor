@@ -1,24 +1,3 @@
-"""
-Канонические коды Хаффмана.
-
-Идея: обычное дерево Хаффмана даёт длины кодов для каждого символа.
-Канонический код строится по этим длинам детерминированно:
-  - коды одинаковой длины идут по возрастанию номера символа
-  - при переходе к большей длине код сдвигается влево (<<1) и инкрементируется
-
-Это позволяет хранить в метаданных только список длин (по 1 байту на символ),
-а не полный словарь пар (символ → код), что экономит место.
-
-Формат файла HCAN:
-  magic    4 байта  "HCAN"
-  orig_len 8 байт   uint64 LE — исходная длина
-  n_syms   2 байта  uint16 LE — число символов с ненулевой длиной кода
-  [symbol 1 байт, code_len 1 байт] × n_syms
-  total_bits 8 байт uint64 LE
-  payload  остаток
-"""
-from __future__ import annotations
-
 import heapq
 import struct
 from collections import Counter
@@ -26,9 +5,6 @@ from pathlib import Path
 from typing import Any
 
 MAGIC = b"HCAN"
-
-
-# ── Шаг 1: получить длины кодов из дерева Хаффмана ──────────────────────────
 
 class _Node:
     __slots__ = ("sym", "freq", "left", "right")
@@ -41,7 +17,6 @@ class _Node:
 
     def __lt__(self, other: Any) -> bool:
         return self.freq < other.freq
-
 
 def _build_lengths(data: bytes) -> dict[int, int]:
     """Возвращает словарь {символ: длина_кода}."""
@@ -84,14 +59,7 @@ def _build_lengths(data: bytes) -> dict[int, int]:
     _walk(root, 0)
     return lengths
 
-
-# ── Шаг 2: строим канонические коды по длинам ───────────────────────────────
-
 def build_canonical_codes(lengths: dict[int, int]) -> dict[int, str]:
-    """
-    По словарю {символ: длина} строит канонические коды.
-    Символы сортируются: сначала по длине, затем по значению байта.
-    """
     if not lengths:
         return {}
 
@@ -112,21 +80,15 @@ def build_canonical_codes(lengths: dict[int, int]) -> dict[int, str]:
 
 
 def canonical_codes_from_data(data: bytes) -> tuple[dict[int, int], dict[int, str]]:
-    """Возвращает (lengths, canonical_codes) для данных."""
     lengths = _build_lengths(data)
     codes = build_canonical_codes(lengths)
     return lengths, codes
 
 
-# ── Шаг 3: декодер по длинам (без дерева) ────────────────────────────────────
-
 def build_decode_table(lengths: dict[int, int]) -> dict[str, int]:
     """Строит таблицу {битовая_строка: символ} из длин."""
     codes = build_canonical_codes(lengths)
     return {v: k for k, v in codes.items()}
-
-
-# ── Сжатие / распаковка ───────────────────────────────────────────────────────
 
 def _bits_to_bytes(bits: str) -> tuple[bytes, int]:
     total = len(bits)
@@ -202,12 +164,10 @@ def decompress(blob: bytes) -> bytes:
 
 
 def write_file(data: bytes, path: str | Path) -> None:
-    """Записывает сжатый файл в формате HCAN."""
     Path(path).write_bytes(MAGIC + compress(data))
 
 
 def read_file(path: str | Path) -> bytes:
-    """Читает и распаковывает файл HCAN."""
     raw = Path(path).read_bytes()
     if raw[:4] != MAGIC:
         raise ValueError("Неверная сигнатура HCAN")
@@ -218,10 +178,7 @@ def roundtrip(data: bytes) -> bool:
     return decompress(compress(data)) == data
 
 
-# ── Тест ──────────────────────────────────────────────────────────────────────
-
 if __name__ == "__main__":
-    import os
 
     tests = [
         b"hello world",

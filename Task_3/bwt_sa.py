@@ -1,23 +1,7 @@
 """
 Задание 3, п.1: функция преобразования суффиксного массива в последний столбец BWT.
 Задание 4, п.1: эффективное прямое BWT через суффиксный массив (pydivsufsort).
-
-sa_to_bwt(sa, data) — принимает суффиксный массив и исходные данные,
-    возвращает последний столбец матрицы BWT (байтовая строка).
-
-Формула: L[i] = data[(sa[i] - 1) % n]
-  — для каждой строки матрицы, начинающейся в позиции sa[i],
-    предыдущий символ (по кругу) является символом последнего столбца.
-
-Временная сложность: O(n) — один проход по SA.
-Пространственная сложность: O(n) — хранение выходного массива.
-
-Для SA, построенного SA-IS (pydivsufsort):
-  Временная сложность построения SA: O(n)
-  Пространственная сложность: O(n)
 """
-from __future__ import annotations
-
 try:
     import pydivsufsort
     _HAS_DIVSUFSORT = True
@@ -28,16 +12,13 @@ except ImportError:
 def sa_to_bwt(sa: list[int], data: bytes) -> tuple[bytes, int]:
     """
     Преобразует суффиксный массив в последний столбец матрицы BWT.
-
     Входные данные:
         sa   — суффиксный массив (list[int32]), len(sa) == len(data)
         data — исходная байтовая строка
-
     Выходные данные:
         (last_column: bytes, primary_index: int)
         primary_index — индекс строки матрицы, соответствующей исходной строке
                         (sa[primary_index] == 0)
-
     Сложность: O(n) по времени и памяти.
     """
     n = len(data)
@@ -59,7 +40,6 @@ def bwt_via_sa(data: bytes) -> tuple[bytes, int]:
     """
     Эффективное прямое BWT через суффиксный массив SA-IS (O(n)).
     Использует pydivsufsort для построения SA.
-
     Сложность построения SA (SA-IS): O(n) время, O(n) память.
     Сложность sa_to_bwt: O(n) время, O(n) память.
     Итого: O(n) время, O(n) память.
@@ -71,9 +51,6 @@ def bwt_via_sa(data: bytes) -> tuple[bytes, int]:
 
     sa = pydivsufsort.divsufsort(data)
     return sa_to_bwt(list(sa), data)
-
-
-# ── Тесты ──────────────────────────────────────────────────────────────────────
 
 if __name__ == "__main__":
     from Task_3.bwt_lf import bwt_forward_naive, bwt_inverse_lf
@@ -104,7 +81,6 @@ if __name__ == "__main__":
     for tc in test_cases:
         naive_last, naive_pi = bwt_forward_naive(tc)
         fast_last, fast_pi = bwt_via_sa(tc)
-
         # Результат BWT не обязан совпадать побайтово (разные реализации
         # могут отличаться при одинаковых суффиксах), но обратное
         # преобразование должно давать исходную строку
@@ -120,13 +96,11 @@ if __name__ == "__main__":
     print()
     print("── Производительность на 1МБ ──")
     import time
-
     big = bytes(range(256)) * 4096  # 1МБ
     t0 = time.time()
     last, pi = bwt_via_sa(big)
     t1 = time.time()
     print(f"bwt_via_sa (SA-IS):     {t1 - t0:.3f}с на {len(big)//1024}КБ")
-
     t0 = time.time()
     last2, pi2 = bwt_forward_naive(big[:10000])  # naive только 10КБ — иначе O(n²) долго
     t1 = time.time()

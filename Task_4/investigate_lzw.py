@@ -1,8 +1,3 @@
-# investigate_lzw.py
-"""
-Исследование зависимости коэффициента сжатия LZW от размера словаря.
-"""
-
 import matplotlib.pyplot as plt
 from Task_3.lzw import lzw_compress
 

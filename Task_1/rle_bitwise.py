@@ -26,7 +26,7 @@ class BitReader:
         self.data = data
         self.byte_pos = 0
         self.bit_pos = 0
-        self.current_byte = 0  # загружается лениво в read_bits
+        self.current_byte = 0
 
     def read_bits(self, bits: int) -> int:
         result = 0
@@ -87,17 +87,15 @@ def encode_rle(data: bytes, ms: int, mc: int) -> bytes:
             writer.write_bits(current, ms)  # символ
             i += count
         else:
-            # Литеральная последовательность
             start = i
             i += 1
             # Смотрим, сколько уникальных символов подряд
             while i < n and (i - start) < max_count:
-                # Проверяем, не начинается ли повтор
                 if i + 1 < n and symbols[i] == symbols[i + 1]:
                     break
                 i += 1
             lit_count = i - start
-            writer.write_bits(1, 1)  # флаг "литерал"
+            writer.write_bits(1, 1)  # флаг
             writer.write_bits(lit_count, mc - 1)  # количество
             for j in range(lit_count):
                 writer.write_bits(symbols[start + j], ms)
@@ -106,10 +104,6 @@ def encode_rle(data: bytes, ms: int, mc: int) -> bytes:
 
 
 def decode_rle(data: bytes, ms: int, mc: int, original_bit_len: int = None) -> bytes:
-    """
-    RLE декодирование.
-    original_bit_len: исходная длина в битах (для обрезания последнего неполного символа)
-    """
     reader = BitReader(data)
     symbols = []
 
@@ -121,28 +115,20 @@ def decode_rle(data: bytes, ms: int, mc: int, original_bit_len: int = None) -> b
             count = reader.read_bits(mc - 1)
         except IndexError:
             break
-
         if is_literal:
-            # Литералы
             for _ in range(count):
                 sym = reader.read_bits(ms)
                 symbols.append(sym)
         else:
-            # Повтор
             sym = reader.read_bits(ms)
             symbols.extend([sym] * count)
-
-    # Преобразуем символы обратно в биты
     bits = []
     for sym in symbols:
         for i in range(ms - 1, -1, -1):
             bits.append((sym >> i) & 1)
 
-    # Если знаем исходную длину в битах, обрезаем
     if original_bit_len:
         bits = bits[:original_bit_len]
-
-    # Группируем в байты
     result = bytearray()
     for i in range(0, len(bits), 8):
         if i + 8 <= len(bits):
@@ -151,7 +137,6 @@ def decode_rle(data: bytes, ms: int, mc: int, original_bit_len: int = None) -> b
                 b = (b << 1) | bits[i + j]
             result.append(b)
         else:
-            # Неполный байт, добиваем нулями
             b = 0
             remaining = len(bits) - i
             for j in range(remaining):

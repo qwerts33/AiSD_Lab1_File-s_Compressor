@@ -1,10 +1,3 @@
-"""
-Код Хаффмана: сжатие/распаковка байтовой строки и файловый формат HUF1.
-Метаданные: длина сообщения, таблица частот (для восстановления дерева), число бит потока.
-Хвостовое выравнивание до байта учитывается (pad + total_bits).
-"""
-from __future__ import annotations
-
 import heapq
 import struct
 from collections import Counter
@@ -12,7 +5,6 @@ from pathlib import Path
 from typing import Any
 
 MAGIC = b"HUF1"
-
 
 class _Node:
     __slots__ = ("sym", "freq", "left", "right")
@@ -28,7 +20,6 @@ class _Node:
 
 
 def _build_tree(freq: Counter[int]) -> _Node | None:
-    """Детерминированное слияние при равных частотах (порядок по seq)."""
     if not freq:
         return None
     heap: list[tuple[int, int, _Node]] = []
@@ -55,7 +46,6 @@ def _build_tree(freq: Counter[int]) -> _Node | None:
     _, _, root = heap[0]
     return root
 
-
 def _build_codes(node: _Node | None, prefix: str, out: dict[int, str]) -> None:
     if node is None:
         return
@@ -67,7 +57,6 @@ def _build_codes(node: _Node | None, prefix: str, out: dict[int, str]) -> None:
     if node.right:
         _build_codes(node.right, prefix + "1", out)
 
-
 def build_huffman_codes(data: bytes) -> tuple[_Node | None, dict[int, str]]:
     freq = Counter(data)
     root = _build_tree(freq)
@@ -76,7 +65,6 @@ def build_huffman_codes(data: bytes) -> tuple[_Node | None, dict[int, str]]:
         _build_codes(root, "", codes)
     return root, codes
 
-
 def bits_to_bytes(bits: str) -> tuple[bytes, int]:
     pad = (-len(bits)) % 8
     padded = bits + "0" * pad
@@ -84,7 +72,6 @@ def bits_to_bytes(bits: str) -> tuple[bytes, int]:
     for i in range(0, len(padded), 8):
         out.append(int(padded[i : i + 8], 2))
     return bytes(out), pad
-
 
 def bytes_to_bits(blob: bytes, total_bits: int) -> str:
     bits: list[str] = []
@@ -95,15 +82,12 @@ def bytes_to_bits(blob: bytes, total_bits: int) -> str:
             bits.append("1" if (b >> k) & 1 else "0")
     return "".join(bits)
 
-
 def huffman_encode_stream(data: bytes) -> tuple[bytes, int, int, dict[int, str]]:
-    """payload, total_bits, padding_bits, codes."""
     _, codes = build_huffman_codes(data)
     bits = "".join(codes[b] for b in data)
     total_bits = len(bits)
     payload, pad = bits_to_bytes(bits)
     return payload, total_bits, pad, codes
-
 
 def huffman_decode_stream(payload: bytes, total_bits: int, orig_len: int, freq: Counter[int]) -> bytes:
     root = _build_tree(freq)
@@ -125,7 +109,6 @@ def huffman_decode_stream(payload: bytes, total_bits: int, orig_len: int, freq: 
         raise ValueError("Длина не совпадает")
     return bytes(out)
 
-
 def compress_to_bytes(data: bytes) -> bytes:
     freq = Counter(data)
     if not data:
@@ -139,7 +122,6 @@ def compress_to_bytes(data: bytes) -> bytes:
     buf += struct.pack("<I", len(payload))
     buf += payload
     return bytes(buf)
-
 
 def decompress_from_bytes(blob: bytes) -> bytes:
     if len(blob) < 8 + 4 + 1 + 2:
@@ -158,17 +140,14 @@ def decompress_from_bytes(blob: bytes) -> bytes:
     payload = blob[off : off + pay_len]
     return huffman_decode_stream(payload, total_bits, orig_len, freq)
 
-
 def write_huffman_file(data: bytes, path: str | Path) -> None:
     Path(path).write_bytes(MAGIC + compress_to_bytes(data))
-
 
 def read_huffman_file(path: str | Path) -> bytes:
     raw = Path(path).read_bytes()
     if len(raw) < 4 or raw[:4] != MAGIC:
         raise ValueError("Неверная сигнатура HUF1")
     return decompress_from_bytes(raw[4:])
-
 
 def roundtrip(data: bytes) -> bool:
     return decompress_from_bytes(compress_to_bytes(data)) == data

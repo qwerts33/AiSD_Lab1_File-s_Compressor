@@ -1,27 +1,14 @@
-# rle_utf8.py
-"""
-RLE для UTF-8 текста.
-Решение: преобразуем UTF-8 в кодовые точки Unicode, кодируем их.
-"""
-
-
 def utf8_to_codepoints(data: bytes) -> list:
-    """Декодирует UTF-8 в список кодовых точек Unicode."""
     text = data.decode('utf-8')
     return [ord(ch) for ch in text]
 
 
 def codepoints_to_utf8(codepoints: list) -> bytes:
-    """Кодирует список кодовых точек в UTF-8."""
     chars = [chr(cp) for cp in codepoints]
     return ''.join(chars).encode('utf-8')
 
 
 def encode_rle_utf8(data: bytes, ms: int, mc: int) -> bytes:
-    """
-    RLE для UTF-8 текста.
-    Сначала декодируем в кодовые точки, затем применяем RLE.
-    """
     codepoints = utf8_to_codepoints(data)
     # Преобразуем кодовые точки в байты (каждая точка занимает 1-4 байта)
     # Для простоты будем кодировать сами кодовые точки как числа
@@ -43,19 +30,13 @@ def encode_rle_utf8(data: bytes, ms: int, mc: int) -> bytes:
             packed.append(0x80 | ((cp >> 6) & 0x3F))
             packed.append(0x80 | (cp & 0x3F))
 
-    # Применяем RLE к упакованным данным
     from rle_bitwise import encode_rle, decode_rle
     return encode_rle(bytes(packed), ms, mc)
 
 
 def decode_rle_utf8(data: bytes, ms: int, mc: int, original_cp_count: int = None) -> bytes:
-    """Декодирует RLE для UTF-8 и возвращает UTF-8 байты."""
     from rle_bitwise import decode_rle
-
-    # Сначала декодируем RLE
     packed = decode_rle(data, ms, mc)
-
-    # Преобразуем обратно в кодовые точки
     codepoints = []
     i = 0
     n = len(packed)

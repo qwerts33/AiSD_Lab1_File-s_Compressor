@@ -1,15 +1,3 @@
-"""
-Задание 4: исследование зависимости энтропии от размера блока BWT+MTF.
-
-Для каждого тестового файла и каждого размера блока:
-  1. Разбиваем данные на блоки
-  2. Применяем BWT + MTF к каждому блоку
-  3. Считаем среднюю энтропию (взвешенную по длине блока)
-  4. Сравниваем с исходной энтропией (без BWT+MTF)
-
-Вывод: графики для каждого файла + общий вывод об оптимальном размере блока.
-"""
-
 import os
 import sys
 from pathlib import Path
@@ -17,7 +5,6 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 import numpy as np
 
-# Настройка путей — меняй base_path под свою машину
 BASE_PATH = "/Users/emmat/Documents/учеба/аисд_1/"
 
 TEST_FILES = [
@@ -40,9 +27,6 @@ BLOCK_SIZES = [
     1_000_000,
 ]
 
-
-# ── Импорты алгоритмов ────────────────────────────────────────────────────────
-
 _ROOT = Path(__file__).resolve().parent
 if str(_ROOT) not in sys.path:
     sys.path.insert(0, str(_ROOT))
@@ -51,14 +35,7 @@ from Task_2.entropy import entropy
 from Task_2.mtf_coding import mtf_encode
 from Task_3.bwt_lf import bwt_forward_cyclic
 
-
-# ── Вычисление средневзвешенной энтропии после BWT+MTF ───────────────────────
-
 def entropy_after_bwt_mtf(data: bytes, block_size: int, ms: int = 8) -> float:
-    """
-    Разбивает data на блоки block_size байт, применяет BWT+MTF к каждому,
-    возвращает среднюю энтропию (взвешенную по числу символов в блоке).
-    """
     total_weight = 0
     weighted_entropy = 0.0
     n = len(data)
@@ -80,8 +57,6 @@ def entropy_after_bwt_mtf(data: bytes, block_size: int, ms: int = 8) -> float:
 
     return weighted_entropy / total_weight if total_weight else 0.0
 
-
-# ── Основная функция исследования ─────────────────────────────────────────────
 
 def investigate(data: bytes, label: str, ms: int = 8) -> dict:
     """Возвращает словарь с результатами для одного файла."""
@@ -107,9 +82,6 @@ def investigate(data: bytes, label: str, ms: int = 8) -> dict:
         "block_sizes": BLOCK_SIZES,
         "entropies": results,
     }
-
-
-# ── Построение графиков ────────────────────────────────────────────────────────
 
 def plot_results(all_results: list[dict], output_path: str = "bwt_mtf_block_entropy.png") -> None:
     n = len(all_results)
@@ -152,9 +124,6 @@ def plot_results(all_results: list[dict], output_path: str = "bwt_mtf_block_entr
     print(f"\nГрафик сохранён: {output_path}")
     plt.show()
 
-
-# ── Точка входа ───────────────────────────────────────────────────────────────
-
 def main():
     all_results = []
 
@@ -188,7 +157,6 @@ def main():
         print(f"  {res['label']:<25}: оптимум при блоке {sizes[min_idx]:>10,} байт "
               f"(энтропия {entropies[min_idx]:.4f}, "
               f"базовая {res['base']:.4f})")
-
 
 if __name__ == "__main__":
     main()

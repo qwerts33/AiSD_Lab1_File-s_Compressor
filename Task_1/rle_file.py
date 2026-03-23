@@ -1,9 +1,3 @@
-"""
-Файл с RLE: метаданные Ms, Mc, длина исходника; полезная нагрузка — байты encode().
-Чтение → decode → проверка совпадения с исходным файлом.
-"""
-from __future__ import annotations
-
 import struct
 import sys
 from pathlib import Path
