@@ -26,8 +26,7 @@ def lz77_compress(data: bytes, window: int = 4096, lookahead: int = 16) -> bytes
             while (
                 ln < lookahead
                 and i + ln < n
-                and j + ln < n
-                and data[j + ln] == data[i + ln]
+                and data[j + (ln % (i - j))] == data[i + ln]  # поддержка перекрывающегося копирования
             ):
                 ln += 1
             if ln > best_len:

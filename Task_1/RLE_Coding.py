@@ -64,9 +64,10 @@ def encode(data: bytes, ms: int = 8, mc: int = 8) -> bytes:
             start = i
             i += symbol_size
             while i < n and (i - start) // symbol_size < max_count:
-                if i + symbol_size < n and data[i : i + symbol_size] == data[
-                    i + symbol_size : i + 2 * symbol_size
-                ]:
+                # Останавливаемся перед началом повтора длиной >= 2
+                next_sym = data[i : i + symbol_size]
+                after_next = data[i + symbol_size : i + 2 * symbol_size] if i + symbol_size < n else None
+                if after_next is not None and next_sym == after_next:
                     break
                 i += symbol_size
             count_sym = (i - start) // symbol_size

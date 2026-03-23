@@ -26,18 +26,18 @@ class BitReader:
         self.data = data
         self.byte_pos = 0
         self.bit_pos = 0
-        self.current_byte = data[0] if data else 0
+        self.current_byte = 0  # загружается лениво в read_bits
 
     def read_bits(self, bits: int) -> int:
         result = 0
         for _ in range(bits):
             if self.bit_pos == 0:
+                if self.byte_pos >= len(self.data):
+                    raise IndexError("Чтение за пределами данных")
                 self.current_byte = self.data[self.byte_pos]
                 self.byte_pos += 1
             result = (result << 1) | ((self.current_byte >> (7 - self.bit_pos)) & 1)
-            self.bit_pos += 1
-            if self.bit_pos == 8:
-                self.bit_pos = 0
+            self.bit_pos = (self.bit_pos + 1) % 8
         return result
 
 

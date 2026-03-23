@@ -4,7 +4,7 @@
 """
 
 import matplotlib.pyplot as plt
-from Task_2.bwt_lf import bwt_forward_cyclic
+from Task_3.bwt_lf import bwt_forward_cyclic
 from Task_2.entropy import entropy
 from Task_2.mtf_coding import mtf_encode
 

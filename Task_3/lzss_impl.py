@@ -33,8 +33,7 @@ def lzss_compress(data: bytes, window: int = 4096, lookahead: int = 18, min_matc
             ln = 0
             while (ln < lookahead and
                    i + ln < n and
-                   j + ln < n and
-                   data[j + ln] == data[i + ln]):
+                   data[j + (ln % (i - j))] == data[i + ln]):  # поддержка перекрывающегося копирования
                 ln += 1
 
             if ln > best_len:

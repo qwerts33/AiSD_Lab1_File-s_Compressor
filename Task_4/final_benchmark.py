@@ -16,7 +16,7 @@ if str(_ROOT) not in sys.path:
 # Импорты всех компрессоров
 from Task_1.RLE_Coding import encode as rle_encode, decode as rle_decode
 from Task_2.huffman_codec import compress_to_bytes as ha_compress, decompress_from_bytes as ha_decompress
-from Task_2.bwt_lf import bwt_forward_cyclic, bwt_inverse_lf
+from Task_3.bwt_lf import bwt_forward_cyclic, bwt_inverse_lf
 from Task_2.mtf_coding import mtf_encode, mtf_decode
 from Task_3.lz77 import lz77_compress, lz77_decompress
 from Task_3.lzw import lzw_compress, lzw_decompress
@@ -207,12 +207,12 @@ def main():
     base_path = "/Users/emmat/Documents/учеба/аисд_1/"
 
     test_files = [
-        ("karamazov.txt", 100000, "Текст (русский)"),
-        ("enwik9.txt", 200000, "enwik9"),
+        ("karamazov.txt", None, "Текст (русский)"),
+        ("enwik9.txt", 10**7, "enwik9"),
+        ("/bin/ls", None, "Бинарный файл"),
         ("wnb.raw", None, "Ч/Б изображение"),
         ("gray.raw", None, "Оттенки серого"),
         ("multi_color.raw", None, "Цветное изображение"),
-        ("/bin/ls", 100000, "Бинарный файл"),
     ]
 
     all_results = {}
@@ -228,11 +228,13 @@ def main():
             continue
 
         with open(file_path, 'rb') as f:
-            data = f.read()
+            if limit:
+                data = f.read(limit)
+            else:
+                data = f.read()
 
-        if limit and len(data) > limit:
-            data = data[:limit]
-            print(f"Используем первые {limit} байт из {filename}")
+        if limit:
+            print(f"Используем первые {len(data)} байт из {filename}")
 
         results = test_compressors(data, f"{description} ({filename})")
         all_results[filename] = results

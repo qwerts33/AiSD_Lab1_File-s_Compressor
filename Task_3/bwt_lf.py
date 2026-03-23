@@ -9,8 +9,6 @@ SA считается для T, порядок строк — фильтр SA[k]
 """
 from __future__ import annotations
 
-from collections import Counter
-
 import pydivsufsort
 
 

@@ -11,6 +11,8 @@ import struct
 def lzw_compress(data: bytes, max_dict: int = 4096) -> bytes:
     if max_dict < 256:
         raise ValueError("max_dict должен быть >= 256")
+    if max_dict > 65536:
+        raise ValueError("max_dict не может превышать 65536 (коды хранятся как uint16)")
     d: dict[bytes, int] = {bytes([i]): i for i in range(256)}
     nxt = 256
     w = b""
